@@ -1,0 +1,46 @@
+# --- Python 基本 ---
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.so
+*.dll
+
+# --- 虛擬環境 ---
+venv/
+env/
+
+# --- Qt Designer 相關暫存 ---
+*.qrc
+*.pyproject
+*.pro.user
+
+# --- IDE 設定 ---
+.vscode/
+.idea/
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+
+# --- 系統垃圾檔 ---
+.DS_Store
+Thumbs.db
+
+# --- 影像資料或大型檔案 ---
+# *.jpg
+# *.jpeg
+# *.png
+# *.bmp
+# *.gif
+# *.mp4
+# *.avi
+# *.zip
+# *.rar
+# *.7z
+
+# --- 臨時輸出資料夾 ---
+output/
+results/
+temp/
+logs/
