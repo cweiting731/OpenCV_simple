@@ -12,13 +12,31 @@ class ImageProcessingGroup:
         self.ui.btn_color_transformation.clicked.connect(self.color_transformation)
         self.ui.btn_one_load_image.clicked.connect(self.load_image)
         self.ui.btn_color_extraction.clicked.connect(self.color_extraction)
+        self.ui.btn_one_clear_image.clicked.connect(self.clear_image)
         self.ui.label_one_image.setText("No Image Loaded")
+        self.ui.label_one_image.setStyleSheet("color: red;")
+        self.ui.btn_color_separation.setEnabled(False)
+        self.ui.btn_color_transformation.setEnabled(False)
+        self.ui.btn_color_extraction.setEnabled(False)
+        
 
     def load_image(self):
         path, _ = QFileDialog.getOpenFileName(None, "Open Image", "", "Images (*.png *.jpg *.jpeg)")
         if path:
             self.img = cv2.imread(path)
             self.ui.label_one_image.setText(os.path.basename(path))
+            self.ui.label_one_image.setStyleSheet("color: green;")
+            self.ui.btn_color_separation.setEnabled(True)
+            self.ui.btn_color_transformation.setEnabled(True)
+            self.ui.btn_color_extraction.setEnabled(True)
+
+    def clear_image(self):
+        self.img = None
+        self.ui.label_one_image.setText("No Image Loaded")
+        self.ui.label_one_image.setStyleSheet("color: red;")
+        self.ui.btn_color_separation.setEnabled(False)
+        self.ui.btn_color_transformation.setEnabled(False)
+        self.ui.btn_color_extraction.setEnabled(False)
 
     def color_separation(self):
         if self.img is None:
@@ -45,21 +63,20 @@ class ImageProcessingGroup:
         if self.img is None:
             return
 
-        # Step 1: BGR → HSV
+        # 1) Transform “rgb.jpg” from BGR format to HSV format
         hsv = cv2.cvtColor(self.img, cv2.COLOR_BGR2HSV)
 
-        # Step 2: 建立黃色+綠色範圍
+        # 2) Yellow-Green mask I1
         lower = np.array([18, 0, 25])     # HSV 下限
         upper = np.array([85, 255, 255])  # HSV 上限
         mask = cv2.inRange(hsv, lower, upper)
 
-        # Step 3: mask 反相
+        # 3) Invert the mask I1
         mask_inv = cv2.bitwise_not(mask)
 
-        # Step 4: 只保留非黃綠區域
+        # 4) Remove Yellow and Green color in the image to generate I2
         extracted = cv2.bitwise_and(self.img, self.img, mask=mask_inv)
 
-        # Step 5: 顯示結果
         cv2.imshow("Original", self.img)
         cv2.imshow("Yellow-Green Mask", mask)
         cv2.imshow("Inverted Mask", mask_inv)

@@ -5,6 +5,7 @@ from PyQt5.QtWidgets import QApplication, QMainWindow
 from hw1_ui import Ui_MainWindow
 
 from groups.image_processing import ImageProcessingGroup
+from groups.image_smoothing import ImageSmoothingGroup
 
 # 這一段解決 "Could not find the Qt platform plugin 'windows'" 問題
 # os.environ["QT_QPA_PLATFORM_PLUGIN_PATH"] = os.path.join(os.path.dirname(PyQt5.__file__), "Qt", "plugins")
@@ -15,6 +16,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.setupUi(self)
 
         self.image_processing_group = ImageProcessingGroup(self)
+        self.image_smoothing_group = ImageSmoothingGroup(self)
 
 
 if __name__ == "__main__":
