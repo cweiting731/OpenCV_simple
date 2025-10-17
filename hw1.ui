@@ -186,7 +186,7 @@
           </widget>
          </item>
          <item>
-          <widget class="QTextBrowser" name="txt_rotation">
+          <widget class="QPlainTextEdit" name="txt_rotation">
            <property name="maximumSize">
             <size>
              <width>16777215</width>
@@ -232,7 +232,7 @@
           </widget>
          </item>
          <item>
-          <widget class="QTextBrowser" name="txt_scaling">
+          <widget class="QPlainTextEdit" name="txt_scaling">
            <property name="maximumSize">
             <size>
              <width>16777215</width>
@@ -278,7 +278,7 @@
           </widget>
          </item>
          <item>
-          <widget class="QTextBrowser" name="txt_tx">
+          <widget class="QPlainTextEdit" name="txt_tx">
            <property name="maximumSize">
             <size>
              <width>16777215</width>
@@ -319,12 +319,12 @@
             </size>
            </property>
            <property name="text">
-            <string>Tx:</string>
+            <string>Ty:</string>
            </property>
           </widget>
          </item>
          <item>
-          <widget class="QTextBrowser" name="txt_ty">
+          <widget class="QPlainTextEdit" name="txt_ty">
            <property name="maximumSize">
             <size>
              <width>16777215</width>
