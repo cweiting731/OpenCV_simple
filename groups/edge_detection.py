@@ -14,8 +14,8 @@ class EdgeDetectionGroup:
         # 綁定按鈕事件
         self.ui.btn_three_load_image.clicked.connect(self.load_image)
         self.ui.btn_three_clear_image.clicked.connect(self.clear_image)
-        self.ui.btn_sobel_x.clicked.connect(self.sobel_x_generator)
-        self.ui.btn_sobel_y.clicked.connect(self.sobel_y_generator)
+        self.ui.btn_sobel_x.clicked.connect(lambda: self.sobel_x_generator(showImg=True))
+        self.ui.btn_sobel_y.clicked.connect(lambda: self.sobel_y_generator(showImg=True))
         self.ui.btn_combination_and_threshold.clicked.connect(self.combination_and_threshold)
         self.ui.btn_gradient_angle.clicked.connect(self.gradient_angle)
         self.ui.label_three_image.setText("No Image Loaded")
@@ -29,6 +29,10 @@ class EdgeDetectionGroup:
         path, _ = QFileDialog.getOpenFileName(None, "Open Image", "", "Images (*.png *.jpg *.jpeg)")
         if path:
             self.img = cv2.imread(path)
+            self.sobel_x = None
+            self.sobel_x_raw = None
+            self.sobel_y = None
+            self.sobel_y_raw = None
             self.ui.label_three_image.setText(os.path.basename(path))
             self.ui.label_three_image.setStyleSheet("color: green;")
             self.ui.btn_sobel_x.setEnabled(True)
@@ -38,6 +42,10 @@ class EdgeDetectionGroup:
 
     def clear_image(self):
         self.img = None
+        self.sobel_x = None
+        self.sobel_x_raw = None
+        self.sobel_y = None
+        self.sobel_y_raw = None
         self.ui.label_three_image.setText("No Image Loaded")
         self.ui.label_three_image.setStyleSheet("color: red;")
         self.ui.btn_sobel_x.setEnabled(False)
@@ -57,9 +65,10 @@ class EdgeDetectionGroup:
 
         return result
 
-    def sobel_x_generator(self):
+    def sobel_x_generator(self, showImg = True):
         if self.sobel_x is not None:
-            cv2.imshow("Sobel X", self.sobel_x)
+            if showImg:
+                cv2.imshow("Sobel X", self.sobel_x)
             return
         if self.img is None:
             return
@@ -73,12 +82,13 @@ class EdgeDetectionGroup:
                                    [-1, 0, 1]])
         self.sobel_x_raw = self.filter2D(blurred, sobel_x_filter)
         self.sobel_x = np.clip(self.sobel_x_raw, 0, 255).astype(np.uint8)
-        cv2.imshow("Sobel X", self.sobel_x)
-        cv2.imshow
+        if showImg:
+            cv2.imshow("Sobel X", self.sobel_x)
 
-    def sobel_y_generator(self):
+    def sobel_y_generator(self, showImg = True):
         if self.sobel_y is not None:
-            cv2.imshow("Sobel Y", self.sobel_y)
+            if showImg:
+                cv2.imshow("Sobel Y", self.sobel_y)
             return
         if self.img is None:
             return
@@ -93,48 +103,48 @@ class EdgeDetectionGroup:
                                    [1, 2, 1]])
         self.sobel_y_raw = self.filter2D(blurred, sobel_y_filter)
         self.sobel_y = np.clip(self.sobel_y_raw, 0, 255).astype(np.uint8)
-        cv2.imshow("Sobel Y", self.sobel_y)
+        if showImg:
+            cv2.imshow("Sobel Y", self.sobel_y)
 
     def combination_and_threshold(self):
         if self.img is None:
             return
-        if self.sobel_x is None:
-            self.sobel_x_generator()
-        if self.sobel_y is None:
-            self.sobel_y_generator()
-        sobel_x = self.sobel_x.astype(np.float32)
-        sobel_y = self.sobel_y.astype(np.float32)
+        if self.sobel_x_raw is None:
+            self.sobel_x_generator(showImg=False)
+        if self.sobel_y_raw is None:
+            self.sobel_y_generator(showImg=False)
 
-        combination = np.sqrt(sobel_x**2 + sobel_y**2)
-        combination = np.clip(combination, 0, 255).astype(np.uint8)
+        combination = np.sqrt(np.square(self.sobel_x_raw) + np.square(self.sobel_y_raw))
+        combination = cv2.normalize(combination, None, 0, 255, cv2.NORM_MINMAX)
     
         _, th128 = cv2.threshold(combination, 128, 255, cv2.THRESH_BINARY)
         _, th28 = cv2.threshold(combination, 28, 255, cv2.THRESH_BINARY)
 
-        cv2.imshow("Combination", combination)
-        cv2.imshow("Threshold 128", th128)
-        cv2.imshow("Threshold 28", th28)
+        cv2.imshow("Combination", combination.astype(np.uint8))
+        cv2.imshow("Threshold 128", th128.astype(np.uint8))
+        cv2.imshow("Threshold 28", th28.astype(np.uint8))
 
     def gradient_angle(self):
         if self.img is None:
             return
         if self.sobel_x_raw is None:
-            self.sobel_x_generator()
+            self.sobel_x_generator(showImg=False)
         if self.sobel_y_raw is None:
-            self.sobel_y_generator()
+            self.sobel_y_generator(showImg=False)
 
-        radian = np.arctan2(self.sobel_y_raw, self.sobel_x_raw)
-        print(np.min(radian), np.max(radian))
-        angle = np.rad2deg(radian)
-        angle[angle < 0] += 360  # 將角度範圍調整到 [0, 360)
+        angle = np.arctan2(self.sobel_y_raw, self.sobel_x_raw) * (180.0 / np.pi)
+        angle[angle < 0] += 360 
 
         mask_170_190 = ((angle >= 170) & (angle <= 190)).astype(np.uint8) * 255
         mask_260_280 = ((angle >= 260) & (angle <= 280)).astype(np.uint8) * 255
 
-        output_170_190 = cv2.bitwise_and(self.img, self.img, mask=mask_170_190)
-        output_260_280 = cv2.bitwise_and(self.img, self.img, mask=mask_260_280)
+        image = np.sqrt(np.square(self.sobel_x_raw) + np.square(self.sobel_y_raw)).astype(np.uint8)
+        image = cv2.normalize(image, None, 0, 255, cv2.NORM_MINMAX)
 
-        cv2.imshow("mask 170-190", mask_170_190)
-        cv2.imshow("mask 260-280", mask_260_280)
+        output_170_190 = cv2.bitwise_and(image, mask_170_190)
+        output_260_280 = cv2.bitwise_and(image, mask_260_280)
+
+        # cv2.imshow("mask 170-190", mask_170_190)
+        # cv2.imshow("mask 260-280", mask_260_280)
         cv2.imshow("Gradient Angle 170-190", output_170_190)
         cv2.imshow("Gradient Angle 260-280", output_260_280)

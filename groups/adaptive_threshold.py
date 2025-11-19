@@ -4,6 +4,7 @@ from PyQt5.QtWidgets import QFileDialog
 import os
 
 class AdaptiveThresholdGroup:
+    original_img = None
     img = None
     def __init__(self, ui):
         self.ui = ui
@@ -20,7 +21,7 @@ class AdaptiveThresholdGroup:
     def load_image(self):
         path, _ = QFileDialog.getOpenFileName(None, "Open Image", "", "Images (*.png *.jpg *.jpeg)")
         if path:
-            self.img = cv2.imread(path, cv2.IMREAD_GRAYSCALE)
+            self.img = cv2.imread(path)
             self.ui.label_five_image.setText(os.path.basename(path))
             self.ui.label_five_image.setStyleSheet("color: green;")
             self.ui.btn_global_threshold.setEnabled(True)
@@ -36,16 +37,18 @@ class AdaptiveThresholdGroup:
     def apply_global_threshold(self):
         if self.img is None:
             return
-        if (self.img.ndim == 3):
-            self.img = cv2.cvtColor(self.img, cv2.COLOR_BGR2GRAY)
-        _, thresh_img = cv2.threshold(self.img, 80, 255, cv2.THRESH_BINARY)
+        grey = cv2.cvtColor(self.img, cv2.COLOR_BGR2GRAY)
+        _, thresh_img = cv2.threshold(grey, 80, 255, cv2.THRESH_BINARY)
+        cv2.imshow('original', self.img)
+        cv2.imshow('grey', grey)
         cv2.imshow('Global Threshold', thresh_img)
 
     def apply_local_threshold(self):
         if self.img is None:
             return
-        if (self.img.ndim == 3):
-            self.img = cv2.cvtColor(self.img, cv2.COLOR_BGR2GRAY)
-        thresh_img = cv2.adaptiveThreshold(self.img, 255, cv2.ADAPTIVE_THRESH_MEAN_C,
+        grey = cv2.cvtColor(self.img, cv2.COLOR_BGR2GRAY)
+        thresh_img = cv2.adaptiveThreshold(grey, 255, cv2.ADAPTIVE_THRESH_MEAN_C,
                                            cv2.THRESH_BINARY, 19, -1)
+        cv2.imshow('original', self.img)
+        cv2.imshow('grey', grey)
         cv2.imshow('Local Threshold', thresh_img)
